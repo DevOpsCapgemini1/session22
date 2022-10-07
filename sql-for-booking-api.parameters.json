@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "mbidzins-sql-server"
+    },
+    "sqlDbName": {
+      "value": "mbidzins-sql-db"
+    },
+    "administratorLogin": {
+      "value": "mbidzinsk"
+    },
+    "administratorLoginPassword": {
+      "value": "HARDpassword1"
+    }
+  }
+}

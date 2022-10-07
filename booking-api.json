@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.11.1.770",
+      "templateHash": "8973232041904597761"
+    }
+  },
+  "parameters": {
+    "appServicePlanName": {
+      "type": "string"
+    },
+    "appServiceName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "pricingTier": {
+      "type": "string"
+    },
+    "nodesInWebFarm": {
+      "type": "int"
+    },
+    "dockerImage": {
+      "type": "string"
+    },
+    "administratorLogin": {
+      "type": "secureString"
+    },
+    "administratorLoginPassword": {
+      "type": "secureString"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-12-01",
+      "name": "[parameters('appServicePlanName')]",
+      "location": "[parameters('location')]",
+      "kind": "linux",
+      "sku": {
+        "name": "[parameters('pricingTier')]"
+      },
+      "tags": {
+        "displayName": "[parameters('appServicePlanName')]"
+      },
+      "properties": {
+        "targetWorkerCount": "[parameters('nodesInWebFarm')]",
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-12-01",
+      "name": "[parameters('appServiceName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux,container",
+      "tags": {
+        "[format('hidden-related:{0}/providers/Microsoft.Web/serverfarms/{1}', resourceGroup().id, parameters('appServicePlanName'))]": "Resource",
+        "displayName": "[parameters('appServiceName')]"
+      },
+      "properties": {
+        "httpsOnly": false,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+        "siteConfig": {
+          "numberOfWorkers": "[parameters('nodesInWebFarm')]",
+          "linuxFxVersion": "[format('DOCKER|{0}', parameters('dockerImage'))]",
+          "appSettings": [
+            {
+              "name": "SqlDatabase",
+              "value": "[format('Server=tcp:mbidzins-sql-server.database.windows.net,1433;Initial Catalog=mbidzins-sql-db;Persist Security Info=False;User ID={0};Password={1};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;', parameters('administratorLogin'), parameters('administratorLoginPassword'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+      ]
+    }
+  ]
+}

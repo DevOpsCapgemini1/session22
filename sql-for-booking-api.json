@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.11.1.770",
+      "templateHash": "13198494278633373562"
+    }
+  },
+  "parameters": {
+    "sqlServerName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "sqlDbName": {
+      "type": "string"
+    },
+    "pricingTier": {
+      "type": "string",
+      "defaultValue": "Standard"
+    },
+    "dbBackupPolicy": {
+      "type": "string",
+      "defaultValue": "Local",
+      "allowedValues": ["Geo", "GeoZone", "Local", "Zone"]
+    },
+    "firewallRules": {
+      "type": "array",
+      "defaultValue": ["0.0.0.0", "255.255.255.255"]
+    },
+    "administratorLogin": {
+      "type": "securestring"
+    },
+    "administratorLoginPassword": {
+      "type": "securestring"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "[parameters('sqlServerName')]"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('administratorLogin')]",
+        "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[format('{0}/{1}', parameters('sqlServerName'), 'AllowAllWindowsAzureIps')]",
+      "properties": {
+        "startIpAddress": "[first(parameters('firewallRules'))]",
+        "endIpAddress": "[last(parameters('firewallRules'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('sqlDbName'))]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "displayName": "[parameters('sqlDbName')]"
+      },
+      "sku": {
+        "name": "[parameters('pricingTier')]",
+        "tier": "[parameters('pricingTier')]"
+      },
+      "properties": {
+        "requestedBackupStorageRedundancy": "[parameters('dbBackupPolicy')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+      ]
+    }
+  ]
+}

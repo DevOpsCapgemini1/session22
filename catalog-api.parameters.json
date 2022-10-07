@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServicePlanName": {
+      "value": "mbidzins-catalog-asp"
+    },
+    "appServiceName": {
+      "value": "mbidzins-catalog-app"
+    },
+    "location": {
+      "value": "west europe"
+    },
+    "skuTier": {
+      "value": "B1"
+    },
+    "nodesInWebFarm": {
+      "value": 1
+    },
+    "dockerImage": {
+      "value": "mbidzinsk/catalog-api-kub:latest"
+    }
+  }
+}
